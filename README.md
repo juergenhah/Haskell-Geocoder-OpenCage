@@ -57,4 +57,4 @@ Just (ResultBody
 
 
 ```
-
+There are more functions where further parameters can be included, see the examples.
