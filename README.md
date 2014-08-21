@@ -1,4 +1,63 @@
 Haskell-Geocoder-OpenCage
 =========================
 
-Haskell interface requesting the OpenCage geocoding service
+The request and response are converted into Haskell data types.
+
+
+So far geocoding is implemented, if requested I can implement reverse geocoding too.
+
+Dependencies:
+------------
+It uses the ([wreq][http://www.serpentine.com/wreq/]) package to wrap HTTP.
+
+
+Code Examples:
+------------
+
+shortest way to geocode
+```haskell  
+import qualified GeoCage as GeoCage
+import qualified Data.Text as T (pack,unpack)
+
+myDeveloperkey = T.pack "your-dev-key"
+geocodeNewYork = GeoCage.getAPIResponse (T.pack "New York") myDeveloperkey
+```
+
+```haskell  
+checkLicensesforDelhi = do
+  let params = GeoCage.defaultParams {GeoCage._para_q = T.pack "Delhi",GeoCage._para_key=myDeveloperkey}
+  eitherResponse<-GeoCage.getAPIResponseWith params
+  case eitherResponse of
+    Nothing -> putStrLn "no result delivered from the geocoder"
+    Just r -> do 
+      putStrLn "which licenses are used:"
+      putStrLn $ show (GeoCage.licenses r)
+```
+
+```haskell  
+howManyRequestsLeft :: IO Integer
+howManyRequestsLeft = do
+  let params = GeoCage.defaultParams {GeoCage._para_q = T.pack "Delhi",GeoCage._para_key=myDeveloperkey}
+  eitherResponse<-GeoCage.getAPIResponseWith params
+  case eitherResponse of
+    Nothing -> return (-1)
+    Just r -> do 
+      return $ (GeoCage.remaining.GeoCage.rate $ r)
+```
+```haskell  
+geocodeVienna = GeoCage.geocode (T.pack "Vienna") myDeveloperkey
+```
+```haskell  
+geocodeAustriaGermanResult= do
+  let params= GeoCage.defaultParams {GeoCage._para_q = T.pack "Austria"
+                                    ,GeoCage._para_key=myDeveloperkey
+                                    ,GeoCage._para_language= Just $  T.pack "de"}
+  results <- GeoCage.geocodeWith params
+  print $ map (T.unpack.GeoCage.formatted) results
+```
+
+```haskell  
+testGeocodeAPI1 = do 
+  let tokens = map T.pack ["Berlin","München","Tokyo","invalid","San Francisco","White House"]
+  GeoCage.geocodeGeoTokensList tokens myDeveloperkey
+```
