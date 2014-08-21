@@ -1,7 +1,7 @@
 Haskell-Geocoder-OpenCage
 =========================
 
-The request and response are converted into Haskell data types.
+Haskell interface requesting the OpenCage geocoding service. The request and response are converted into Haskell data types.
 
 
 So far geocoding is implemented, if requested I can implement reverse geocoding too.
