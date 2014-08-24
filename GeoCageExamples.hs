@@ -1,4 +1,4 @@
-
+module GeoCageExamples where
 import qualified GeoCage as GeoCage
 
 import qualified Data.Text as T (pack,unpack)

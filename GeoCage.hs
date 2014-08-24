@@ -1,6 +1,7 @@
-{-# LANGUAGE  DeriveGeneric,OverloadedStrings ,TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric, OverloadedStrings #-}
 
 
+-- | Add documentation here
 module GeoCage  (QueryParameters(..)
   ,defaultParams
   ,TokenToGeocode
@@ -22,82 +23,88 @@ module GeoCage  (QueryParameters(..)
   ,Bounds (..)) where
 
 import qualified Data.Text as T (Text,pack,unpack)
-
 import GHC.Generics (Generic)
 import Data.Aeson  hiding (Result) 
 import Control.Applicative ((<$>), (<*>))
-import Data.Maybe
+import Data.ByteString.Char8 as Bs (ByteString) 
 
-import qualified Network.Wreq as Wreq
-import Control.Lens ((&), (^.), (^?), (.~), (?~),makeLenses)
-import qualified Control.Exception as E
-
-import qualified Data.ByteString.Lazy as BS
-
+import HTTPWrapper
 type TokenToGeocode = T.Text
 type GeoCageDeveloperKey = T.Text
 
 
+-- | Add documentation here
 data QueryParameters = QueryParameters {
-  _para_q::T.Text,
-  _para_key::T.Text,
-  _para_language:: Maybe T.Text, -- IETF format language code 
-  _para_pretty::Maybe T.Text,
-  _para_bounds::Maybe T.Text, --southwest corner, northeast corner
-  _para_country::Maybe T.Text, -- ISO 3166-1 Alpha 3
-  _para_fields::Maybe T.Text --comma separated list
+  para_q::T.Text,
+  para_key::T.Text,
+  para_language:: Maybe T.Text, -- IETF format language code 
+  para_pretty::Maybe T.Text,
+  para_bounds::Maybe T.Text, --southwest corner, northeast corner
+  para_country::Maybe T.Text, -- ISO 3166-1 Alpha 3
+  para_fields::Maybe T.Text --comma separated list
 }deriving (Show,Generic)
-$(makeLenses ''QueryParameters)
 
+
+-- | Add documentation here
+defaultParams :: QueryParameters
 defaultParams = QueryParameters {
-  _para_q="",
-  _para_key="",
-  _para_language=Just "en",
-  _para_pretty=Nothing,
-  _para_bounds=Nothing,
-  _para_country=Nothing,
-  _para_fields=Nothing}
+  para_q="",
+  para_key="",
+  para_language=Just "en",
+  para_pretty=Nothing,
+  para_bounds=Nothing,
+  para_country=Nothing,
+  para_fields=Nothing}
 
+-- | Add documentation here
 getAPIResponse :: TokenToGeocode -> GeoCageDeveloperKey -> IO (Maybe ResultBody)
 getAPIResponse tokenToGeocode developerKey = 
   getAPIResponseWith parameters
-  where parameters = defaultParams {_para_q= tokenToGeocode,_para_key=developerKey}
+  where parameters = defaultParams {para_q= tokenToGeocode,para_key=developerKey}
 
+
+-- | Add documentation here
 getAPIResponseWith :: GeoCage.QueryParameters -> IO (Maybe ResultBody)
-getAPIResponseWith parameters =do 
-  let httpopts = Wreq.defaults  
-             & Wreq.param "q" .~ [_para_q parameters] 
-             & Wreq.param "key" .~ [_para_key parameters] 
-             & maybe id (\p -> Wreq.param "language" .~ [p]) 
-               (_para_language parameters)
-             & maybe id (\p -> Wreq.param "pretty" .~ [p]) 
-               (_para_pretty parameters)
-             & maybe id (\p -> Wreq.param "bounds" .~ [p]) 
-               (_para_bounds parameters)
-             & maybe id (\p -> Wreq.param "country" .~ [p]) 
-               (_para_country parameters)
-             & maybe id (\p -> Wreq.param "fields" .~ [p]) 
-               (_para_fields parameters)
-  -- send the HTTP Request
-  wasHTTPRequestsuccesfull <- E.try (Wreq.getWith httpopts "http://api.opencagedata.com/geocode/v1/json?")  :: IO (Either E.SomeException (Wreq.Response BS.ByteString))
-  case wasHTTPRequestsuccesfull of
-   Left exception -> do putStrLn "exception at HTTP request to opencagedata, issue: "
-                        print exception
-                        return Nothing
-   Right response -> do -- convert JSON into the ResultBody data type
-     let conversionJSONsucc = Wreq.asJSON response :: Either E.SomeException (Wreq.Response ResultBody)
-     case conversionJSONsucc of
-              Left exception -> do putStrLn "exception at ByteString to JSON conversion, issue:"
-                                   print exception
-                                   return Nothing
-              Right resultBody -> do
-                      return $ Just (resultBody ^. Wreq.responseBody)
+getAPIResponseWith parameters =do
+  reqSuccesfull <-requestGeocage parameters
+  case reqSuccesfull of
+    Left err -> do   putStrLn "exception at geoCage request, issue:"
+                     print err
+                     return Nothing
+    Right response -> case eitherDecodeStrict response of
+                             Left exception -> do putStrLn
+                                                    "exception at ByteString to JSON conversion, issue:"
+                                                  print exception
+                                                  return Nothing
+                             Right resultBody -> return $ Just resultBody
+ where requestGeocage :: QueryParameters -> IO (Either String ByteString)
+       requestGeocage params = download geocageUrl para
+        where geocageUrl = "http://api.opencagedata.com/geocode/v1/json?" 
+              para = convertQParamstoOptionsList params
+ 
+-- | Add documentation here
+convertQParamstoOptionsList :: QueryParameters -> [(String,String)]
+convertQParamstoOptionsList (QueryParameters q key lang pre boun cou fields)= [] ++
+ [("q",T.unpack q),("key",T.unpack key)]
+ ++ toParameter "language" lang 
+ ++ toParameter "pretty" pre 
+ ++ toParameter "bounds" boun
+ ++ toParameter "country" cou
+ ++ toParameter "fields" fields
+ where toParameter :: String -> Maybe T.Text -> [(String,String)]
+       toParameter param mValue = case mValue of
+                                   Nothing -> []
+                                   Just val -> [(param,T.unpack val)]
+convertQParamstoOptionsList _ = []
 
+
+-- | Add documentation here
 geocode :: TokenToGeocode-> GeoCageDeveloperKey -> IO [GeoCage.Result]
 geocode tokentoGeocode developerKey = geocodeWith params
-  where params = defaultParams {_para_q=tokentoGeocode,_para_key=developerKey}
+  where params = defaultParams {para_q=tokentoGeocode,para_key=developerKey}
   
--- returns an empty list if an exception occured or the result was empty
+
+-- | returns an empty list if an exception occured or the result was empty
 geocodeWith :: GeoCage.QueryParameters ->  IO [GeoCage.Result]
 geocodeWith params = do 
   resp <- getAPIResponseWith params 
@@ -105,17 +112,19 @@ geocodeWith params = do
    Nothing -> return []
    Just r -> return $ GeoCage.results r
 
+-- | Add documentation here
 geocodeGeoTokensList :: [TokenToGeocode]-> GeoCageDeveloperKey  -> IO()
 geocodeGeoTokensList geoTokens developerKey = do
- let geocodeparams = GeoCage.defaultParams {GeoCage._para_key=developerKey,
-                                               GeoCage._para_language= Just$ T.pack  "en",
-                                               GeoCage._para_country = Just $ T.pack "DEU"}
+ let geocodeparams = GeoCage.defaultParams {GeoCage.para_key=developerKey,
+                                               GeoCage.para_language= Just$ T.pack  "en",
+                                               GeoCage.para_country = Just $ T.pack "DEU"}
  let params =  createGeocoderParams geocodeparams geoTokens
- results<-  mapM geocodeWith params
- print results
+ res<-  mapM geocodeWith params
+ print res
 
+-- | Add documentation here
 createGeocoderParams :: QueryParameters -> [TokenToGeocode]-> [QueryParameters]
-createGeocoderParams params geoTokens = zipWith (\p t -> p {_para_q=t}) 
+createGeocoderParams params geoTokens = zipWith (\p t -> p {para_q=t}) 
                    (replicate (length geoTokens) params) 
                    geoTokens
 
@@ -160,6 +169,7 @@ instance FromJSON Result where
                          v .: "confidence"<*>
                          (v .:? "formatted" .!= "") <*> 
                          v .: "geometry"
+  parseJSON _ = undefined
 
 data Status = Status { 
   code::Integer, 
@@ -203,3 +213,4 @@ instance FromJSON Components where
                          (v .:? "state" .!= "") <*>
                          (v .:? "city" .!= "") <*>
                          (v .:? "road" .!= "")
+  parseJSON _ = undefined
