@@ -4,11 +4,9 @@ Haskell-Geocoder-OpenCage
 Haskell interface requesting the OpenCage geocoding service. The request and response are converted into Haskell data types.
 
 
-So far geocoding is implemented, if requested I can implement reverse geocoding too.
-
 Dependencies:
 ------------
-It uses the [wreq](http://www.serpentine.com/wreq/) package to wrap HTTP.
+It simpleHTTP function for HTTP requests.
 
 
 Code Examples:
@@ -16,11 +14,12 @@ Code Examples:
 
 shortest way to geocode
 ```haskell  
-import qualified GeoCage as GeoCage
-import qualified Data.Text as T (pack,unpack)
+import qualified Geocoder    as Geocoder
+import qualified RevGeocoder as RevGeocoder
+import qualified Data.Text   as T (pack,unpack)
 
 myDeveloperkey = T.pack "your-dev-key"
-geocodeNewYork = GeoCage.getAPIResponse (T.pack "New York") myDeveloperkey
+geocodeNewYork = Geocoder.getAPIResponse (T.pack "New York") myDeveloperkey
 ```
 
 will result in:
@@ -57,4 +56,15 @@ Just (ResultBody
 
 
 ```
+
+shortest way to reversegeocode
+```haskell 
+
+reverseGeocodeTUVienna = do
+    results<-RevGeocoder.reverseGeocode 48.19637 16.36992 myDeveloperkey
+    let formattedResult= map (T.unpack.RevGeocoder.formatted) results
+    mapM_ putStrLn formattedResult
+
+```
+
 There are more functions where further parameters can be included, see the examples.
