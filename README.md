@@ -12,7 +12,7 @@ It uses the simpleHTTP function for HTTP requests.
 Code Examples:
 ------------
 
-shortest way to geocode
+shortest way to geocode:
 ```haskell  
 import qualified Geocoder    as Geocoder
 import qualified RevGeocoder as RevGeocoder
@@ -57,7 +57,9 @@ Just (ResultBody
 
 ```
 
-shortest way to reversegeocode
+
+shortest way to reverse geocode:
+
 ```haskell 
 
 reverseGeocodeTUVienna = do
@@ -66,7 +68,8 @@ reverseGeocodeTUVienna = do
     mapM_ putStrLn formattedResult
 
 ```
-the output equals:
+
+will result in:
 ```
 27-29, Gußhausstraße, Wieden, Freihausviertel, Wieden, Vienna, 1040, Vienna, Austria, TU Wien, Neues EI
 ```
