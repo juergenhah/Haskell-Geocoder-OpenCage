@@ -6,7 +6,7 @@ Haskell interface requesting the OpenCage geocoding service. The request and res
 
 Dependencies:
 ------------
-It simpleHTTP function for HTTP requests.
+It uses the simpleHTTP function for HTTP requests.
 
 
 Code Examples:
