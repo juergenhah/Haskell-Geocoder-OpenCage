@@ -66,5 +66,9 @@ reverseGeocodeTUVienna = do
     mapM_ putStrLn formattedResult
 
 ```
+the output equals:
+```
+27-29, Gußhausstraße, Wieden, Freihausviertel, Wieden, Vienna, 1040, Vienna, Austria, TU Wien, Neues EI
+```
 
-There are more functions where further parameters can be included, see the examples.
+There are more functions where further parameters can be included, see the GeoCageExamples module.
