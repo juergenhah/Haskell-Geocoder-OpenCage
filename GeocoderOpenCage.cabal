@@ -28,6 +28,25 @@ library
   other-modules:    
                     HTTPWrapper
                     
-  extensions:                            
-                    OverloadedStrings
+  default-language: Haskell2010
+
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      base ==4.*
+    , hspec ==2.*
+    , bytestring
+    , raw-strings-qq
+    , aeson >=1.4.2.0
+    , HUnit
+    , GeocoderOpenCage
+    , text
+  other-modules:
+  default-language: Haskell2010
+  build-tool-depends: hspec-discover:hspec-discover == 2.*
 

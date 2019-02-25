@@ -406,25 +406,35 @@ instance FromJSON Location
 data Components = Components
   { iso_3166_1_alpha_2 :: T.Text
   , iso_3166_1_alpha_3 :: T.Text
+  , componentType :: T.Text
   , country :: T.Text
   , country_code :: T.Text
   , county :: T.Text
   , state :: T.Text
   , city :: T.Text
+  , city_district :: T.Text
   , suburb :: T.Text
   , road :: T.Text
-  } deriving (Show, Generic)
+  , postcode :: T.Text
+  , political_union :: T.Text
+  , house_number :: T.Text
+  } deriving (Eq, Show, Generic)
 
 -- | not all components are included into the response, if so there is an empty string as default value
 instance FromJSON Components where
   parseJSON (Object v) =
     Components <$> (v .:? "ISO_3166-1_alpha-2" .!= "") <*>
     (v .:? "ISO_3166-1_alpha-3" .!= "") <*>
+    (v .:? "_type" .!= "") <*>
     (v .:? "country" .!= "") <*>
     (v .:? "country_code" .!= "") <*>
     (v .:? "county" .!= "") <*>
     (v .:? "state" .!= "") <*>
     (v .:? "city" .!= "") <*>
+    (v .:? "city_district" .!= "") <*>
     (v .:? "suburb" .!= "") <*>
-    (v .:? "road" .!= "")
+    (v .:? "road" .!= "") <*>
+    v .:? "postcode" .!= "" <*>
+    v .:? "political_union" .!= "" <*>
+    v .:? "house_number" .!= ""
   parseJSON _ = undefined
