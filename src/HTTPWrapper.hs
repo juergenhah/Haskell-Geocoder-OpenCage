@@ -36,8 +36,10 @@ download url requestParameter = do
 -- can deal with redirects, see RealWorldHaskell for a description
 downloadURL :: String -> IO (Either String ByteString) --
 downloadURL url = do
+  let headers = [mkHeader Headers.HdrUserAgent "haskell-opencage-geocoder"]
+      request = Headers.insertHeaders headers (HTTP.getRequest url)
   result <-
-    E.try (HTTP.simpleHTTP (HTTP.getRequest url)) :: IO (Either E.SomeException (Stream.Result (Response String)))
+    E.try (HTTP.simpleHTTP request) :: IO (Either E.SomeException (Stream.Result (Response String)))
   case result of
     Left x -> return $ Left ("Problem with simpleHTTP :" ++ show x)
     Right resp ->
