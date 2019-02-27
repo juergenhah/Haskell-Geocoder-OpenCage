@@ -1,6 +1,6 @@
 name:           GeocoderOpenCage
-version:        0.1.0.1
-cabal-version:  >= 1.4
+version:        0.2.0.0
+cabal-version:  >= 1.12
 build-type:     Simple
 author:         Juergen Hahn
 maintainer:     hahn@geoinfo.tuwien.ac.at
@@ -15,10 +15,10 @@ synopsis:       Geocoder and Reverse Geocoding Service Wrapper
 library 
   build-depends:    
                     base >= 4 && <5,
-                    text >= 1.1.1.0 && <2,
-                    HTTP >=4000.2.8 && <4000.3,
-                    bytestring >=0.10.0 && <0.11,
-                    aeson >=0.9
+                    text >= 1.2.3.1 && <2,
+                    HTTP >=4000.3.12 && <4000.4,
+                    bytestring >=0.10.8.2 && <0.11,
+                    aeson >=1.4.2.0
   hs-source-dirs:   src
   ghc-options:      -Wall
   exposed-modules:  
@@ -28,6 +28,25 @@ library
   other-modules:    
                     HTTPWrapper
                     
-  extensions:                            
-                    OverloadedStrings
+  default-language: Haskell2010
+
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      base ==4.*
+    , hspec ==2.*
+    , bytestring
+    , raw-strings-qq
+    , aeson >=1.4.2.0
+    , HUnit
+    , GeocoderOpenCage
+    , text
+  other-modules:
+  default-language: Haskell2010
+  build-tool-depends: hspec-discover:hspec-discover == 2.*
 
